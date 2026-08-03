@@ -1,19 +1,18 @@
 # BMI計算機
 
-このリポジトリは kojo が生成した単一ページWebアプリです。
+身長（cm）と体重（kg）から BMI をリアルタイム計算し、日本肥満学会基準の肥満度判定を表示する静的単一ページアプリ。
 
-## アイデア
+## アプリ概要と構成
 
-# BMI計算機
+- エントリ: `public/index.html`（CSS/JS インライン、外部リソースなし）
+- 入力: `#height`（cm）・`#weight`（kg）。`input` イベントのたびに再計算
+- 計算: `calcBmi` — `weightKg / (heightCm / 100) ** 2`、表示は小数点第1位（`toFixed(1)`）
+- 判定: `classifyBmi` — 18.5 未満「低体重」、18.5 以上 25 未満「普通体重」、25 以上 30 未満「肥満（1度）」、30 以上 35 未満「肥満（2度）」、35 以上 40 未満「肥満（3度）」、40 以上「肥満（4度）」（下限含む・上限含まず）
+- 結果: `#bmi-value` / `#bmi-label`。未入力または 0 以下のときは `#result` にプレースホルダ「身長と体重を入力してください」
+- テスト: `tests/app.spec.ts`（Playwright、`file://` で `public/index.html` を開く）
+- 配信: Cloudflare Workers assets（`wrangler.jsonc`）
 
-身長（cm）と体重（kg）を入力すると自動的にBMI値を計算し、肥満度の判定（低体重・普通体重・肥満など）も合わせて表示する静的単一ページアプリ。
-
-## 受け入れ条件の種
-
-- 身長と体重を入力するとBMI値が小数点第1位まで自動計算されて表示される
-- 算出されたBMI値に応じて「低体重」「普通体重」「肥満」などの判定ラベルが表示される
-- 身長または体重の入力値を変更するたびにBMI値と判定が再計算される
-
+現状の仕様の正は README.md と `tests/app.spec.ts` である。`PLAN.md` は初回実装時の計画（歴史的文書）であり、受け入れ条件の最新ソースとしては扱わない。
 
 ## 技術スタック（不変）
 
@@ -22,23 +21,31 @@
 - テスト: Playwright（`tests/app.spec.ts`、`npm test`）
 - 保守時もこのスタックを維持すること。フレームワーク・ビルドツール・宣言外ライブラリの導入は禁止
 
-## 制約
+## 品質不変条件
 
-- 静的アプリ（`public/` 配下のみ）。サーバコード・外部API・ビルドツールは使わない
-- `public/index.html` を単一ファイルで完結させる（CSS/JSインライン可）
-- PLAN.md の受け入れ条件それぞれに対応するテストを `tests/app.spec.ts` に追記し、`npm test` が通ること（雛形のスモークテストは削除しない）
-- favicon を `<link rel="icon" href="data:image/svg+xml,...">` のインライン data URI で含める（外部ファイル・外部URL不可。アプリのテーマに合った絵柄にする）
-- hub（apps.jozo.beer）へのフッター導線を入れる。マークアップは次のとおり固定する:
+次を壊してはならない。変更後は必ず `npm run verify` が通る状態を維持すること。
 
-  ```html
-  <footer style="margin-top:3rem;text-align:center;font-size:.8rem;opacity:.6">
-    <a href="https://apps.jozo.beer" style="color:inherit">apps.jozo.beer</a>
-  </footer>
-  ```
+- **favicon**: `<link rel="icon" href="data:image/svg+xml,...">` のインライン data URI（外部ファイル・外部 URL 不可）
+- **フッター**: hub（apps.jozo.beer）への導線。リンク先 `https://apps.jozo.beer` とリンクテキスト `apps.jozo.beer` は変えない
 
-  スタイル（リンク色を含む）はアプリのテーマに合わせて調整してよいが、リンク先 `https://apps.jozo.beer` とリンクテキスト `apps.jozo.beer` は変えない。リンク色を変える場合は背景とのコントラストを確保すること
+```html
+<footer style="margin-top:3rem;text-align:center;font-size:.8rem;opacity:.6">
+  <a href="https://apps.jozo.beer" style="color:inherit">apps.jozo.beer</a>
+</footer>
+```
 
-  配置は縦方向の通常フローの最下部に統合する。body がセンタリングレイアウト（display:flex / display:grid で中央寄せ）の場合、`</body>` 直前に置くと footer がその flex/grid アイテムになりレイアウトが崩れる（row 方向 flex では横並びになる）ため、body を flex-direction: column にするか、センタリング済みメインコンテナ内の末尾に置くこと。それ以外の場合は `</body>` 直前でよい
-- README.md はテンプレートが生成済み。削除しないこと
-- apple-touch-icon / manifest / og-image / robots / sitemap は factory が公開時に自動生成するため、builder は書かない
-- 完成条件: PLAN.md の受け入れ条件をすべて満たし、`npm run verify` と `npm test` が通ること
+スタイル（リンク色を含む）はテーマに合わせて調整してよい。リンク色を変える場合は背景とのコントラストを確保すること。body が flex/grid のセンタリングレイアウトのときは、`flex-direction: column` にするかメインコンテナ末尾に置き、フッターが横並びの flex アイテムにならないようにする。
+
+その他:
+
+- 静的アプリ（`public/` 配下のみ）。サーバコード・外部 API・ビルドツールは使わない
+- `public/index.html` を単一ファイルで完結させる（CSS/JS インライン可）
+- 雛形のスモークテスト（ページロード・ページエラーなし）は削除しない
+- README.md は削除しない
+
+## 保守の進め方
+
+1. 変更したい振る舞いを受け入れ条件として `tests/app.spec.ts` に先に書く（または既存テストを更新する）
+2. `public/index.html` を実装・修正する
+3. `npm test` と `npm run verify` を通す
+4. `npm run deploy` で Cloudflare Workers へデプロイする
