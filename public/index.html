@@ -1,5 +1,177 @@
 <!doctype html>
 <html lang="ja">
-<head><meta charset="utf-8"><title>BMI計算機</title></head>
-<body><h1>BMI計算機</h1><p>builder がこのファイルを実装で置き換えます。</p></body>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>BMI計算機</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%232d6a4f'/%3E%3Cpath d='M16 6c-2.2 0-4 1.8-4 4v2h8v-2c0-2.2-1.8-4-4-4z' fill='%23fff'/%3E%3Crect x='10' y='14' width='12' height='12' rx='2' fill='%23fff'/%3E%3Ctext x='16' y='23' text-anchor='middle' font-size='7' font-family='sans-serif' fill='%232d6a4f'%3EBMI%3C/text%3E%3C/svg%3E">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+      background: linear-gradient(160deg, #e8f5e9 0%, #f1f8f4 50%, #e0f2f1 100%);
+      color: #1b4332;
+    }
+    main {
+      width: 100%;
+      max-width: 420px;
+      padding: 2rem 1.25rem 1rem;
+      flex: 1;
+    }
+    h1 {
+      margin: 0 0 1.5rem;
+      font-size: 1.5rem;
+      font-weight: 700;
+      text-align: center;
+      color: #2d6a4f;
+    }
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: 0 4px 20px rgba(45, 106, 79, 0.12);
+    }
+    .field {
+      margin-bottom: 1.25rem;
+    }
+    .field:last-of-type {
+      margin-bottom: 1.5rem;
+    }
+    label {
+      display: block;
+      margin-bottom: 0.4rem;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #40916c;
+    }
+    .input-row {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    input[type="number"] {
+      flex: 1;
+      padding: 0.65rem 0.75rem;
+      border: 2px solid #b7e4c7;
+      border-radius: 8px;
+      font-size: 1.1rem;
+      color: #1b4332;
+      background: #f8fdf9;
+      transition: border-color 0.15s;
+    }
+    input[type="number"]:focus {
+      outline: none;
+      border-color: #52b788;
+    }
+    .unit {
+      font-size: 0.95rem;
+      color: #74c69d;
+      font-weight: 500;
+      min-width: 2rem;
+    }
+    #result {
+      text-align: center;
+      padding: 1.25rem;
+      border-radius: 8px;
+      background: #f0faf3;
+      border: 1px solid #d8f3dc;
+    }
+    #result.placeholder {
+      color: #74c69d;
+      font-size: 0.95rem;
+    }
+    #bmi-value {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: #2d6a4f;
+      line-height: 1.2;
+    }
+    #bmi-label {
+      margin-top: 0.35rem;
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #40916c;
+    }
+    footer {
+      margin-top: 3rem;
+      text-align: center;
+      font-size: 0.8rem;
+      opacity: 0.6;
+      padding-bottom: 1.5rem;
+    }
+    footer a {
+      color: #2d6a4f;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>BMI計算機</h1>
+    <div class="card">
+      <div class="field">
+        <label for="height">身長</label>
+        <div class="input-row">
+          <input type="number" id="height" inputmode="decimal" min="0" step="0.1" placeholder="170">
+          <span class="unit">cm</span>
+        </div>
+      </div>
+      <div class="field">
+        <label for="weight">体重</label>
+        <div class="input-row">
+          <input type="number" id="weight" inputmode="decimal" min="0" step="0.1" placeholder="60">
+          <span class="unit">kg</span>
+        </div>
+      </div>
+      <div id="result" class="placeholder">身長と体重を入力してください</div>
+    </div>
+  </main>
+  <footer>
+    <a href="https://apps.jozo.beer" style="color:inherit">apps.jozo.beer</a>
+  </footer>
+  <script>
+    function calcBmi(heightCm, weightKg) {
+      return weightKg / (heightCm / 100) ** 2;
+    }
+
+    function classifyBmi(bmi) {
+      if (bmi < 18.5) return "低体重";
+      if (bmi < 25) return "普通体重";
+      if (bmi < 30) return "肥満（1度）";
+      if (bmi < 35) return "肥満（2度）";
+      if (bmi < 40) return "肥満（3度）";
+      return "肥満（4度）";
+    }
+
+    const heightInput = document.getElementById("height");
+    const weightInput = document.getElementById("weight");
+    const resultEl = document.getElementById("result");
+
+    function render() {
+      const height = parseFloat(heightInput.value);
+      const weight = parseFloat(weightInput.value);
+
+      if (!height || !weight || height <= 0 || weight <= 0) {
+        resultEl.className = "placeholder";
+        resultEl.innerHTML = "身長と体重を入力してください";
+        return;
+      }
+
+      const bmi = calcBmi(height, weight);
+      const label = classifyBmi(bmi);
+
+      resultEl.className = "";
+      resultEl.innerHTML =
+        '<div id="bmi-value">' + bmi.toFixed(1) + '</div>' +
+        '<div id="bmi-label">' + label + '</div>';
+    }
+
+    heightInput.addEventListener("input", render);
+    weightInput.addEventListener("input", render);
+  </script>
+</body>
 </html>
