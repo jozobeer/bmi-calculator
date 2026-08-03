@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://bmi-calculator.jozo.beer/sitemap.xml
