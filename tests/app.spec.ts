@@ -46,6 +46,21 @@ test("BMI値に応じた判定ラベルが日本肥満学会基準で表示さ�
   await page.fill("#weight", "25");
   await expect(page.locator("#bmi-value")).toHaveText("25.0");
   await expect(page.locator("#bmi-label")).toHaveText("肥満（1度）");
+
+  // 境界値 30.0 → 肥満（2度）
+  await page.fill("#weight", "30");
+  await expect(page.locator("#bmi-value")).toHaveText("30.0");
+  await expect(page.locator("#bmi-label")).toHaveText("肥満（2度）");
+
+  // 境界値 35.0 → 肥満（3度）
+  await page.fill("#weight", "35");
+  await expect(page.locator("#bmi-value")).toHaveText("35.0");
+  await expect(page.locator("#bmi-label")).toHaveText("肥満（3度）");
+
+  // 境界値 40.0 → 肥満（4度）
+  await page.fill("#weight", "40");
+  await expect(page.locator("#bmi-value")).toHaveText("40.0");
+  await expect(page.locator("#bmi-label")).toHaveText("肥満（4度）");
 });
 
 test("入力変更のたびにBMI値と判定が再計算される", async ({ page }) => {
