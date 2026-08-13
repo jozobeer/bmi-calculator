@@ -97,15 +97,61 @@
       font-weight: 600;
       color: #40916c;
     }
+    .info {
+      margin-top: 2rem;
+    }
+    .info h2 {
+      margin: 0 0 0.75rem;
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #2d6a4f;
+    }
+    .info ol,
+    .info dl {
+      margin: 0;
+      padding: 0;
+      font-size: 0.9rem;
+      line-height: 1.6;
+      color: #40916c;
+    }
+    .info ol {
+      padding-left: 1.25rem;
+    }
+    .info dt {
+      margin-top: 0.75rem;
+      font-weight: 600;
+      color: #2d6a4f;
+    }
+    .info dt:first-child {
+      margin-top: 0;
+    }
+    .info dd {
+      margin: 0.25rem 0 0;
+    }
   </style>
 <!-- kojo:enrich -->
-<meta name="description" content="身長（cm）と体重（kg）を入力すると自動的にBMI値を計算し、肥満度の判定（低体重・普通体重・肥満など）も合わせて表示する静的単一ページアプリ。">
+<meta name="description" content="身長（cm）と体重（kg）を入力するとBMIをリアルタイム計算し、日本肥満学会基準の判定（低体重・普通体重・肥満1〜4度）を表示する無料の計算機です。">
 <meta property="og:title" content="BMI計算機">
-<meta property="og:description" content="身長（cm）と体重（kg）を入力すると自動的にBMI値を計算し、肥満度の判定（低体重・普通体重・肥満など）も合わせて表示する静的単一ページアプリ。">
+<meta property="og:description" content="身長（cm）と体重（kg）を入力するとBMIをリアルタイム計算し、日本肥満学会基準の判定（低体重・普通体重・肥満1〜4度）を表示する無料の計算機です。">
 <meta property="og:url" content="https://bmi-calculator.jozo.beer">
 <meta property="og:type" content="website">
 <meta property="og:image" content="https://bmi-calculator.jozo.beer/og-image.png">
 <meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "BMI計算機",
+  "description": "身長（cm）と体重（kg）を入力するとBMIをリアルタイム計算し、日本肥満学会基準の判定（低体重・普通体重・肥満1〜4度）を表示する無料の計算機です。",
+  "url": "https://bmi-calculator.jozo.beer/",
+  "applicationCategory": "UtilitiesApplication",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "JPY"
+  }
+}
+</script>
 <script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "02eece820ec1400f87bf847824dfabd9"}'></script>
 <!-- kojo:icons -->
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
@@ -131,6 +177,25 @@
       </div>
       <div id="result" class="placeholder">身長と体重を入力してください</div>
     </div>
+    <section id="how-to" class="info" aria-labelledby="how-to-heading">
+      <h2 id="how-to-heading">使い方</h2>
+      <ol>
+        <li>身長をセンチメートル（cm）で入力します。</li>
+        <li>体重をキログラム（kg）で入力します。</li>
+        <li>入力のたびに BMI 値と判定ラベルが自動で更新されます。ボタン操作は不要です。</li>
+      </ol>
+    </section>
+    <section id="faq" class="info" aria-labelledby="faq-heading">
+      <h2 id="faq-heading">FAQ</h2>
+      <dl>
+        <dt>BMI の計算式は？</dt>
+        <dd>体重（kg）÷（身長（m））² です。表示は小数点第1位までです。</dd>
+        <dt>判定の基準は何ですか？</dt>
+        <dd>日本肥満学会の基準です。18.5未満が低体重、18.5以上25未満が普通体重、25以上が肥満（1〜4度）です。</dd>
+        <dt>データは保存されますか？</dt>
+        <dd>いいえ。入力はブラウザ内だけで計算され、サーバーへ送信しません。</dd>
+      </dl>
+    </section>
   </main>
   <footer style="margin-top:3rem;text-align:center;font-size:.8rem;opacity:.6">
     <a href="https://apps.jozo.beer" style="color:inherit">apps.jozo.beer</a>

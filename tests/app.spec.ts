@@ -99,3 +99,36 @@ test("フッターにapps.jozo.beerへのリンクが表示される", async ({ 
   await expect(link).toBeVisible();
   await expect(link).toHaveText("apps.jozo.beer");
 });
+
+test("meta description が空でない", async ({ page }) => {
+  await page.goto(APP_URL);
+  const content = await page.locator('meta[name="description"]').getAttribute("content");
+  expect(content).toBeTruthy();
+  expect(content!.trim().length).toBeGreaterThan(0);
+});
+
+test("JSON-LD に WebApplication が含まれる", async ({ page }) => {
+  await page.goto(APP_URL);
+  const texts = await page.locator('script[type="application/ld+json"]').allTextContents();
+  expect(texts.length).toBeGreaterThan(0);
+
+  const nodes = texts.flatMap((text) => {
+    const parsed = JSON.parse(text);
+    return Array.isArray(parsed) ? parsed : [parsed];
+  });
+  const app = nodes.find(
+    (n) => n["@type"] === "WebApplication" || (Array.isArray(n["@type"]) && n["@type"].includes("WebApplication")),
+  );
+  expect(app).toBeTruthy();
+  expect(app.name).toBeTruthy();
+  expect(app.description).toBeTruthy();
+  expect(app.url).toBeTruthy();
+  expect(app.applicationCategory).toBeTruthy();
+  expect(app.offers?.price).toBe("0");
+});
+
+test("使い方とFAQのセクションが存在する", async ({ page }) => {
+  await page.goto(APP_URL);
+  await expect(page.locator("#how-to")).toBeVisible();
+  await expect(page.locator("#faq")).toBeVisible();
+});
