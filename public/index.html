@@ -97,6 +97,73 @@
       font-weight: 600;
       color: #40916c;
     }
+    #bmi-scale {
+      margin-top: 1.25rem;
+      text-align: left;
+    }
+    .bmi-scale-track {
+      position: relative;
+      padding-bottom: 1.35rem;
+    }
+    .bmi-scale-bands {
+      display: flex;
+      width: 100%;
+      height: 2.5rem;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+    .bmi-band {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 0;
+      flex: 0 0 auto;
+      padding: 0.2rem 0.12rem;
+      font-size: 0.58rem;
+      font-weight: 600;
+      line-height: 1.15;
+      text-align: center;
+      color: #1b4332;
+      opacity: 0.5;
+    }
+    .bmi-band:nth-child(1) { background: #a8dadc; }
+    .bmi-band:nth-child(2) { background: #52b788; }
+    .bmi-band:nth-child(3) { background: #b7e4c7; }
+    .bmi-band:nth-child(4) { background: #e9c46a; }
+    .bmi-band:nth-child(5) { background: #f4a261; }
+    .bmi-band:nth-child(6) { background: #e76f51; }
+    .bmi-band.is-current {
+      opacity: 1;
+      box-shadow: inset 0 0 0 2px #1b4332;
+      font-weight: 700;
+    }
+    .bmi-tick {
+      position: absolute;
+      top: 2.65rem;
+      transform: translateX(-50%);
+      font-size: 0.65rem;
+      color: #40916c;
+      white-space: nowrap;
+    }
+    #bmi-marker {
+      position: absolute;
+      top: -5px;
+      width: 2px;
+      height: calc(2.5rem + 5px);
+      background: #1b4332;
+      transform: translateX(-50%);
+      z-index: 1;
+    }
+    #bmi-marker::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translate(-50%, -55%);
+      border-left: 5px solid transparent;
+      border-right: 5px solid transparent;
+      border-top: 7px solid #1b4332;
+    }
     .info {
       margin-top: 2rem;
     }
@@ -214,6 +281,35 @@
       return "肥満（4度）";
     }
 
+    const SCALE_MIN = 15;
+    const SCALE_SPAN = 30;
+    const SCALE_BOUNDS = [15, 18.5, 25, 30, 35, 40, 45];
+    const SCALE_NAMES = ["低体重", "普通体重", "肥満（1度）", "肥満（2度）", "肥満（3度）", "肥満（4度）"];
+
+    function bmiScaleHtml(bmi, label) {
+      const display = bmi.toFixed(1);
+      let bands = "";
+      for (let i = 0; i < SCALE_NAMES.length; i++) {
+        const width = ((SCALE_BOUNDS[i + 1] - SCALE_BOUNDS[i]) / SCALE_SPAN) * 100;
+        const current = SCALE_NAMES[i] === label ? " is-current" : "";
+        bands += '<span class="bmi-band' + current + '" style="width:' + width + '%">' + SCALE_NAMES[i] + "</span>";
+      }
+      let ticks = "";
+      for (let i = 1; i < SCALE_BOUNDS.length - 1; i++) {
+        const left = ((SCALE_BOUNDS[i] - SCALE_MIN) / SCALE_SPAN) * 100;
+        ticks += '<span class="bmi-tick" style="left:' + left + '%">' + SCALE_BOUNDS[i] + "</span>";
+      }
+      const markerLeft = Math.min(100, Math.max(0, ((bmi - SCALE_MIN) / SCALE_SPAN) * 100));
+      return (
+        '<div id="bmi-scale"><div class="bmi-scale-track">' +
+          '<div class="bmi-scale-bands">' + bands + "</div>" +
+          ticks +
+          '<div id="bmi-marker" role="progressbar" aria-valuemin="15" aria-valuemax="45" aria-valuenow="' +
+            display + '" style="left:' + markerLeft + '%"></div>' +
+        "</div></div>"
+      );
+    }
+
     const heightInput = document.getElementById("height");
     const weightInput = document.getElementById("weight");
     const resultEl = document.getElementById("result");
@@ -233,8 +329,9 @@
 
       resultEl.className = "";
       resultEl.innerHTML =
-        '<div id="bmi-value">' + bmi.toFixed(1) + '</div>' +
-        '<div id="bmi-label">' + label + '</div>';
+        '<div id="bmi-value">' + bmi.toFixed(1) + "</div>" +
+        '<div id="bmi-label">' + label + "</div>" +
+        bmiScaleHtml(bmi, label);
     }
 
     heightInput.addEventListener("input", render);

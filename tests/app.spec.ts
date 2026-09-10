@@ -93,6 +93,88 @@ test("未入力または0以下の場合はプレースホルダが表示され�
   await expect(page.locator("#result")).toHaveText("身長と体重を入力してください");
 });
 
+test("有効入力時に判定区分の帯と境界目盛りがBMI 15〜45の横軸で表示される", async ({ page }) => {
+  await page.goto(APP_URL);
+  await page.fill("#height", "170");
+  await page.fill("#weight", "60");
+
+  const scale = page.locator("#result #bmi-scale");
+  await expect(scale).toBeVisible();
+  await expect(scale.locator(".bmi-band")).toHaveText([
+    "低体重",
+    "普通体重",
+    "肥満（1度）",
+    "肥満（2度）",
+    "肥満（3度）",
+    "肥満（4度）",
+  ]);
+  await expect(scale.locator(".bmi-tick")).toHaveText(["18.5", "25", "30", "35", "40"]);
+
+  const widths = await scale.locator(".bmi-band").evaluateAll((els) => {
+    const parentWidth = els[0].parentElement.getBoundingClientRect().width;
+    return els.map((el) => el.getBoundingClientRect().width / parentWidth);
+  });
+  const expected = [3.5, 6.5, 5, 5, 5, 5].map((span) => span / 30);
+  expect(widths.length).toBe(expected.length);
+  for (let i = 0; i < expected.length; i++) {
+    expect(widths[i]).toBeCloseTo(expected[i], 1);
+  }
+});
+
+test("帯の強調区分は現在の判定ラベルと一致し入力変更に追従する", async ({ page }) => {
+  await page.goto(APP_URL);
+  await page.fill("#height", "100");
+  await page.fill("#weight", "18.5");
+
+  const current = page.locator("#bmi-scale .is-current");
+  await expect(current).toHaveCount(1);
+  await expect(current).toHaveText("普通体重");
+  await expect(page.locator("#bmi-label")).toHaveText("普通体重");
+
+  await page.fill("#weight", "25");
+  await expect(current).toHaveCount(1);
+  await expect(current).toHaveText("肥満（1度）");
+  await expect(page.locator("#bmi-label")).toHaveText("肥満（1度）");
+});
+
+test("現在地マーカーはBMI 15〜45の線形位置に置かれaria-valuenowは表示値と一致する", async ({ page }) => {
+  await page.goto(APP_URL);
+  await page.fill("#height", "100");
+
+  await page.fill("#weight", "24");
+  const marker = page.locator("#bmi-scale #bmi-marker");
+  await expect(marker).toBeVisible();
+  expect(await marker.evaluate((el) => el.style.left)).toBe("30%");
+  await expect(marker).toHaveAttribute("aria-valuenow", await page.locator("#bmi-value").innerText());
+
+  await page.fill("#weight", "30");
+  expect(await marker.evaluate((el) => el.style.left)).toBe("50%");
+  await expect(marker).toHaveAttribute("aria-valuenow", await page.locator("#bmi-value").innerText());
+
+  await page.fill("#weight", "60");
+  expect(await marker.evaluate((el) => el.style.left)).toBe("100%");
+  await expect(marker).toHaveAttribute("aria-valuenow", await page.locator("#bmi-value").innerText());
+});
+
+test("無効入力では帯とマーカーがなくプレースホルダだけを表示する", async ({ page }) => {
+  await page.goto(APP_URL);
+  await expect(page.locator("#result")).toHaveText("身長と体重を入力してください");
+  await expect(page.locator("#bmi-scale")).toHaveCount(0);
+  await expect(page.locator("#bmi-marker")).toHaveCount(0);
+
+  await page.fill("#height", "170");
+  await page.fill("#weight", "0");
+  await expect(page.locator("#result")).toHaveText("身長と体重を入力してください");
+  await expect(page.locator("#bmi-scale")).toHaveCount(0);
+  await expect(page.locator("#bmi-marker")).toHaveCount(0);
+
+  await page.fill("#weight", "60");
+  await page.fill("#height", "");
+  await expect(page.locator("#result")).toHaveText("身長と体重を入力してください");
+  await expect(page.locator("#bmi-scale")).toHaveCount(0);
+  await expect(page.locator("#bmi-marker")).toHaveCount(0);
+});
+
 test("フッターにapps.jozo.beerへのリンクが表示される", async ({ page }) => {
   await page.goto(APP_URL);
   const link = page.locator('footer a[href="https://apps.jozo.beer"]');
